@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Tienda el tesoro</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <link href="css/tema.css" rel="stylesheet" type="text/css"/>
+    <script src="js/jquery-3.3.1.min.js" type="application/javascript"></script>
+    <script src="js/bootstrap.js" type="application/javascript"></script>
+    <script src="js/utileria.js" type="application/javascript"></script>
+    <script>
+      var lista = [];
+      var modalRT;
+      var editar = 0;
+      var total = 0;
+      var pago = 0;
+      var saldo = 0;
+        $(document).ready(function(){
+          modalRT = $('#ModalRT');
+          llenarVentasVista('#ventas');
+        });
+
+          function llenarVentasVista(control){
+            $.ajax({
+                method: "GET",
+                url: "sales",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json"
+            }).done(function( msg ) {
+                total = 0;
+                pago = 0;
+                saldo = 0;
+                lista = msg;
+                var texto = "";
+                $(control).empty();
+                for(var i=0; i < lista.length; i++){
+                  texto +="<div style='margin-bottom:10px;' class='list-group-item' onclick='abrirModal(\""+lista[i]._id+"\")'>"
+                        texto += "<p class='text-muted mb-1'><b>Comprador:</b> " + lista[i].comprador.nombre + " " + lista[i].comprador.apellido + "</p>";
+                        texto += "<p class='text-muted mb-1'><b>Fecha venta:</b> " + $.dateT(lista[i].at) + "</p>";
+                        texto += "<p class='text-muted mb-1'><b>Valor pagado:</b> " + $.currency(lista[i].vlrpagado) + "</p>";
+                        texto += "<p class='text-muted mb-1'><b>Valor saldo:</b> " + $.currency(lista[i].saldo) + "</p><br/>";
+                        texto += "<table class='table text-muted table-sm' style='width='100%;'>";
+                            texto += "<thead><tr>";  
+                              texto += "<th style='text-align:center;'>CANTIDAD</th>";  
+                              texto += "<th style='text-align:center;'>PRODUCTOS</th>";  
+                              texto += "<th style='text-align:center;'>SUBTOTAL</th>";  
+                            texto += "</tr></thead>";
+                            texto += "<tfoot><tr>";  
+                              texto += "<th colspan='2' style='text-align:right;'>TOTAL COMPRA</th>";  
+                              texto += "<th style='text-align:right;'> $"+ $.currency(lista[i].total) +"</th>";  
+                            texto += "</tr></tfoot>";  
+                            texto += "<tbody>"; 
+                              for(var j = 0; j < lista[i].detalles.length; j++){
+                                texto += "<tr><td>";  
+                                    texto += lista[i].detalles[j].cantidad;
+                                texto += "</td>";  
+                                texto += "<td>";
+                                    texto += lista[i].detalles[j].producto.nombre;  
+                                texto += "</td>";  
+                                texto += "<td style='text-align:right;'>";  
+                                    texto += "$"+$.currency(lista[i].detalles[j].subtotal);  
+                                texto += "</td></tr>";  
+                              }
+                            texto += "</tbody>"; 
+                      texto += "</table>";
+                  texto += "</div>";
+                  total += lista[i].total;
+                  pago += lista[i].vlrpagado;
+                  saldo += lista[i].saldo;
+                }
+                $("#total").html("$"+$.currency(total));
+                $("#pagos").html("$"+$.currency(pago));
+                $("#creditos").html("$"+$.currency(saldo));
+                $(control).html(texto);
+            });
+        }
+
+        function abrirModal(_id){
+            $("#_id").val(_id);
+            modalRT.modal('show');
+        }
+
+        function retornarVenta(){
+            var _id = $("#_id").val();
+            var nota = $("#nota").val();
+            if(nota === ''){
+                alert("Debe ingresar una nota de porque se retorna la venta");
+            }else{
+                var venta = {_id: _id, nota: nota};
+                $.ajax({
+                    method: "DELETE",
+                    url: "sales",
+                    data: venta
+                }).done(function( msg ) {
+                    alert( "Data Saved: " + msg.mensaje );
+                    llenarVentasVista('#ventas');
+                    limpiarRetorno();
+                });
+            }
+        }
+
+        function limpiarRetorno(){
+            $("#_id").val(null);
+            $("#nota").val(null);
+            modalRT.modal('hide');
+        }
+    </script>
+  </head>
+  <body class="container">
+    <div class="row espacio">
+        <nav id="navbar-example2" class="navbar navbar-light bg-light col-md-12">
+            <a class="navbar-brand" href="#">Lista de ventas</a>
+            <ul class="nav nav-pills">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Vender o Cobrar</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="clients">Clientes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="list-purchase">Lista de Compras</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="products">Productos</a>
+                </li>
+            </ul>
+        </nav>
+        <div class="row" style="width: 100%; padding: 15px; margin: 15px auto; background-color:#f8f9fa;">
+            <div class="col-sm-4">
+                <div class="card">
+                    <div class="card-body">
+                    <h5 class="card-title">VENTA TOTAL DEL DÍA</h5>
+                    <p class="card-text" id="total"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="card">
+                    <div class="card-body">
+                    <h5 class="card-title">VALOR PAGADOS EN EL DÍA</h5>
+                    <p class="card-text" id="pagos"></p>
+                    </div>
+                </div>
+            </div>     
+            <div class="col-sm-4">
+                <div class="card">
+                    <div class="card-body">
+                    <h5 class="card-title">CREDITOS DEL DÍA</h5>
+                    <p class="card-text" id="creditos"></p>
+                    </div>
+                </div>
+            </div>              
+        </div>
+        <ul class="list-group" id="ventas" style="width: 100%; ">
+        </ul>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="ModalRT">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Retornar venta</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">                
+                <input type="hidden" id="_id" name="_id"/>
+                <label for="nota" class="sr-only">Nota</label>
+                <textarea id="nota" rows="2" name="nota" min="0" class="form-control" autofocus></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="retornarVenta()">Enviar</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+            </div>
+        </div>
+        </div>
+  </body>
+</html>
+

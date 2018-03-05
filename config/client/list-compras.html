@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Tienda el tesoro</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <link href="css/tema.css" rel="stylesheet" type="text/css"/>
+    <script src="js/jquery-3.3.1.min.js" type="application/javascript"></script>
+    <script src="js/bootstrap.js" type="application/javascript"></script>
+    <script src="js/utileria.js" type="application/javascript"></script>
+    <script>
+      var lista = [];
+      var modalCE, modalST;
+      var editar = 0;
+        $(document).ready(function(){
+          llenarComprasVista('#compras');
+        });
+
+        function llenarComprasVista(control){
+            $.ajax({
+                method: "GET",
+                url: "purchases",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json"
+            }).done(function( msg ) {
+                lista = msg;
+                var texto = "";
+                $(control).empty();
+                for(var i=0; i < lista.length; i++){
+                  texto +="<div style='margin-bottom:10px;' class='list-group-item'>"
+                        /*texto += "<button class='btn' onclick='eliminarCompra(\""+lista[i]._id+"\")'>Eliminar</button>";*/
+                        texto += "<p class='text-muted mb-1'><b>Fecha compra:</b> " + $.dateT(lista[i].at) + "</p>";
+                        texto += "<p class='text-muted mb-1'><b>Nota:</b> " + ((lista[i].nota===undefined)?'':lista[i].nota) + "</p></br>";
+                        texto += "<table class='table text-muted table-sm' style='width='100%;'>";
+                            texto += "<thead><tr>";  
+                              texto += "<th style='text-align:center;'>CANTIDAD</th>";  
+                              texto += "<th style='text-align:center;'>PRODUCTOS</th>";  
+                              texto += "<th style='text-align:center;'>SUBTOTAL</th>";  
+                            texto += "</tr></thead>";
+                            texto += "<tfoot><tr>";  
+                              texto += "<th colspan='2' style='text-align:right;'>TOTAL COMPRA</th>";  
+                              texto += "<th style='text-align:right;'> $"+ $.currency(lista[i].total) +"</th>";  
+                            texto += "</tr></tfoot>";  
+                            texto += "<tbody>"; 
+                              for(var j = 0; j < lista[i].detalles.length; j++){
+                                texto += "<tr><td>";  
+                                    texto += lista[i].detalles[j].cantidad;
+                                texto += "</td>";  
+                                texto += "<td>";
+                                    texto += lista[i].detalles[j].producto.nombre;  
+                                texto += "</td>";  
+                                texto += "<td style='text-align:right;'>";  
+                                    texto += "$"+$.currency(lista[i].detalles[j].subtotal);  
+                                texto += "</td></tr>";  
+                              }
+                            texto += "</tbody>"; 
+                      texto += "</table>";
+                  texto += "</div>";
+                }
+                $(control).html(texto);
+            });
+        }
+
+        function eliminarCompra(_id){
+            if(_id === ''){
+                alert("Debe seleccionar una compra valida");
+            }else{
+                var r = confirm("¿Desea continuar con el borrado de la compra?");
+                if (r == true) {
+                    var compra = {_id: _id};
+                    $.ajax({
+                        method: "DELETE",
+                        url: "purchases",
+                        data: compra
+                    }).done(function( msg ) {
+                        alert( "Data Saved: " + msg.mensaje );
+                        llenarComprasVista('#compras');
+                    });
+                }
+            }
+        }
+    </script>
+  </head>
+  <body class="container">
+
+    <div class="row espacio">
+        <nav id="navbar-example2" class="navbar navbar-light bg-light col-md-12">
+            <a class="navbar-brand" href="#">Lista de compras</a>
+            <ul class="nav nav-pills">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Vender o Cobrar</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="clients">Clientes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="products">Productos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="list-sale">Lista de Ventas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="purchase">Crear Compra</a>
+                </li>
+            </ul>
+        </nav>
+        <ul class="list-group" id="compras" style="width: 100%; margin-top:20px;">
+        </ul>
+    </div>
+  </body>
+</html>
+

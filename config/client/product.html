@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Tienda el tesoro</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <link href="css/tema.css" rel="stylesheet" type="text/css"/>
+    <script src="js/jquery-3.3.1.min.js" type="application/javascript"></script>
+    <script src="js/bootstrap.js" type="application/javascript"></script>
+    <script src="js/utileria.js" type="application/javascript"></script>
+    <script>
+      var lista = [];
+      var modalCE, modalST;
+      var editar = 0;
+        $(document).ready(function(){
+          llenarProductosVista('#productos');
+          modalCE = $('#ModalCE');
+          modalST = $('#ModalST');
+        });
+
+        function abrirModalCE(producto){
+          for(var i = 0; i < lista.length; i++){
+            if(lista[i]._id === producto){
+              $("#_id").attr("readonly", true);
+              $("#_id").attr("autofocus", false);
+              $("#_id").val(lista[i]._id);
+              $("#nombre").val(lista[i].nombre);
+              $("#descipcion").val(lista[i].descipcion);
+              $("#valorcom").val(lista[i].valorcom);
+              $("#valorvnt").val(lista[i].valorvnt);
+              $("#valorpromo").val(lista[i].valorpromo);
+              $("#minstock").val(lista[i].minstock);
+              $("#minstand").val(lista[i].minstand);
+              modalCE.modal('show');
+              editar = 1;
+              break;
+            }
+          }
+        }
+
+        function abrirModalST(producto){
+          for(var i = 0; i < lista.length; i++){
+            if(lista[i]._id === producto){
+              $("#producto").val(lista[i]._id);
+              $("#cantstock").val(lista[i].cantstock);
+              modalST.modal('show');
+              break;
+            }
+          }
+        }
+
+        function llenarProductosVista(control){
+            $.ajax({
+                method: "GET",
+                url: "product",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json"
+            }).done(function( msg ) {
+                lista = msg;
+                var texto = "";
+                $(control).empty();
+                for(var i=0; i < lista.length; i++){
+                    texto += "<li class='list-group-item d-flex justify-content-between lh-condensed'>";
+                        texto += "<div>";
+                          texto += "<a href='#' onclick=\"abrirModalCE('" + lista[i]._id + "')\">"
+                            texto += "<h6 class='my-0'>" + lista[i].nombre + "</h6>";
+                          texto += "</a>";
+                            texto += "<small class='text-muted'>Codigo: " + lista[i]._id + "</small><br/>";
+                            texto += "<small class='text-muted'>Valor de venta: $" + lista[i].valorvnt + "</small>";
+                        texto += "</div>";
+                        var class_stand = "text-success";
+                        var class_stock = "text-success";
+                        //warning
+                        if(lista[i].cantstand == 0){
+                          class_stand = "text-danger";
+                        }else if(lista[i].cantstand<=lista[i].minstand){
+                          class_stand = "text-warning";
+                        }
+
+                        if(lista[i].cantstock == 0){
+                          class_stock = "text-danger";
+                        }else if(lista[i].cantstock<=lista[i].minstock){
+                          class_stock = "text-warning";
+                        }
+
+                        texto += "<a href='#' onclick=\"abrirModalST('" + lista[i]._id + "')\">"
+                          texto +="<span class='"+class_stand+"' style='font-size:22px;'><b>"+ lista[i].cantstand+"</b></span>";
+                          texto +="<span class='text-secondary' style='font-size:22px;'><b>/</b></span>";
+                          texto +="<span class='"+class_stock+"' style='font-size:25px;'><b>"+ lista[i].cantstock+"</b></span>";
+                        texto += "</a>";
+                    texto += "</li>";
+                }
+                $(control).html(texto);
+            });
+        }
+
+        function enviarInformacion(){
+            var _id = $("#_id").val();
+            var nombre = $("#nombre").val();
+            var descripcion = $("#descripcion").val();
+            var valorcom = $("#valorcom").val();
+            var valorvnt = $("#valorvnt").val();
+            var valorpromo = $("#valorpromo").val();
+            var minstock = $("#minstock").val();
+            var minstand = $("#minstand").val();
+
+            if(_id===null || nombre === null || valorcom === null || valorvnt === null || minstock === null || minstand === null || 
+            _id=== '' || nombre === '' || valorcom === '' || valorvnt === '' || minstock === '' || minstand === ''
+            || parseInt(valorcom) <= 0 || parseInt(valorvnt) <= 0){
+              if(_id === null || _id === ''){
+                alert("Debe ingresar un codigo");
+                $("#_id").focus();
+              }else if(nombre === null || nombre === ''){
+                alert("Debe ingresar un  nombre");
+                $("#nombre").focus();
+              }else if(valorcom === null || valorcom === '' || parseInt(valorcom) <= 0 ){
+                alert("Debe ingresar un valor comercial mayor a 0");
+                $("#valorcom").focus();
+              }else if(valorvnt === null || valorvnt === '' || parseInt(valorvnt) <= 0){
+                alert("Debe ingresar un valor de venta");
+                $("#valorvnt").focus();
+              }else if(minstock === null || minstock === ''){
+                alert("Debe ingresar un valor minimo de stock");
+                $("#minstock").focus();
+              }else if(minstand === null || minstand === ''){
+                alert("Debe ingresar un valor minimo de stand");
+                $("#minstock").focus();
+              }
+            }else{
+                var producto = 
+                {
+                  _id:_id,
+                  nombre: nombre,
+                  descripcion: descripcion,
+                  valorcom: valorcom,
+                  valorvnt: valorvnt,
+                  valorpromo: valorpromo,
+                  minstock: minstock,
+                  minstand: minstand
+                };
+                $.ajax({
+                    method: (editar===0)?"POST":"PUT",
+                    url: "product",
+                    data: producto
+                }).done(function( msg ) {
+                    alert( "Data Saved: " + msg.mensaje );
+                    limpiarModalCE();
+                    llenarProductosVista('#productos');
+                    modalCE.modal('hide');
+                });
+            }
+        }
+
+        function pasarStand(){
+          var producto = $("#producto").val();
+          var cantidad = $("#cantidad").val();
+          var cantstock = $("#cantstock").val();
+
+          if(cantstock<=0){
+            alert("No tienes productos en stock");
+          }else{
+            if(producto===null || cantidad === null || producto=== '' || cantidad === '' || parseInt(cantidad) <= 0){
+              if(producto === null || producto === '' || cantstock < cantidad){
+                alert("Debe seleccionar un producto");
+                $("#producto").focus();
+              }else if(cantidad === null || cantidad === '' || parseInt(cantidad) <= 0){
+                alert("Debe ingresar una cantidad mayor a 0");
+                $("#cantidad").val(null);
+                $("#cantidad").focus();
+              }else if(cantstock < cantidad){
+                alert("Solo tienes disponibles " + cantstock + " para pasar a stand");
+              }
+            }else{
+              var ingreso = {producto: producto, cantidad: parseInt(cantidad)};
+              $.ajax({
+                  method: "PUT",
+                  url: "product/stock",
+                  data: ingreso
+              }).done(function( msg ) {
+                  alert( "Data Saved: " + msg.mensaje );
+                  limpiarModalST();
+                  llenarProductosVista('#productos');
+                  modalST.modal('hide');
+              });
+            }
+          }
+        }
+
+        function limpiarModalCE(){
+          $("#_id").attr("readonly", false);
+          $("#_id").attr("autofocus", true);
+          $("#_id").val(null);
+          $("#nombre").val(null);
+          $("#descripcion").val(null);
+          $("#valorcom").val(null);
+          $("#valorvnt").val(null);
+          $("#valorpromo").val(null);
+          $("#minstock").val("0");
+          $("#minstand").val("0");
+        }
+
+        function limpiarModalST(){
+          $("#producto").val(null);
+          $("#cantidad").val(null);
+          $("#cantstock").val(null);
+        }
+
+        function abrirNuevo(){
+          editar = 0;
+          limpiarModalCE();
+          modalCE.modal('show');
+        }
+    </script>
+  </head>
+  <body class="container">
+
+    <div class="row espacio">
+        <nav id="navbar-example2" class="navbar navbar-light bg-light col-md-12">
+            <a class="navbar-brand" href="#">Lista de productos</a>
+            <ul class="nav nav-pills">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Vender o Cobrar</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="clients">Clientes</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Listas</a>
+                    <div class="dropdown-menu">
+                        <a class="nav-link" href="list-purchase">Lista de Compras</a>
+                        <a class="nav-link" href="list-sale">Lista de Ventas</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Opciones</a>
+                  <div class="dropdown-menu">
+                    <a class="dropdown-item" href="#" onclick="abrirNuevo()">Crear nuevo</a>
+                  </div>
+                </li>
+            </ul>
+        </nav>
+        <ul class="list-group" id="productos" style="width: 100%; margin-top:20px;">
+        </ul>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="ModalCE">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Producto</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">                
+              <label for="_id">Codigo</label>
+              <input type="text" id="_id" name="_id" class="form-control input-sm" required autofocus>
+              <label for="nombre">Nombre</label>
+              <input type="text" id="nombre" name="nombre" class="form-control input-sm" required>
+              <label for="descripcion">Descripcion</label>
+              <input type="text" id="descripcion" name="descripcion" class="form-control input-sm" >
+              <label for="valorcom">Valor comercial</label>
+              <input type="number" id="valorcom" name="valorcom" class="form-control input-sm"  required>
+              <label for="valorvnt">Valor venta</label>
+              <input type="number" id="valorvnt" name="valorvnt" class="form-control input-sm"  required>
+              <label for="minstock" >Stock minimo</label>
+              <input type="number" id="minstock" name="minstock" class="form-control input-sm" value="0"  required>
+              <label for="minstand" >Stand minimo</label>
+              <input type="number" id="minstand" name="minstand" class="form-control input-sm" value="0"  required>
+              <label for="valorpromo">Valor promoción</label>
+              <input type="number" id="valorpromo" name="valorpromo" class="form-control input-sm" >
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="enviarInformacion()">Enviar</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="ModalST">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Pasar de Stock a Stand</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">                
+              <input type="hidden" id="producto" name="producto"/>
+              <input type="hidden" id="cantstock" name="cantstock"/>
+              <label for="cantidad" class="sr-only">Cantidad</label>
+              <input type="number" id="cantidad" name="cantidad" min="0" class="form-control" placeholder="Cantidad" required autofocus>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="pasarStand()">Enviar</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </body>
+</html>
+

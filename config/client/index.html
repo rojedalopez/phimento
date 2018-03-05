@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+        <title>Tienda el tesoro</title>
+        <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+        <link href="css/tema.css" rel="stylesheet" type="text/css"/>
+        <script src="js/jquery-3.3.1.min.js" type="application/javascript"></script>
+        <script src="js/bootstrap.js" type="application/javascript"></script>
+        <script src="js/utileria.js" type="application/javascript"></script>
+        <script>
+            var detalles = [];
+            $(document).ready(function(){
+                $("#fecha").val($.date(null));
+                $("#pagar").hide();
+                $("#a_vender").hide();
+
+                $("#a_vender").click(function(){
+                    $("#pagar").hide();
+                    $("#vender").show();
+                    $("#a_vender").hide();
+                    $("#a_pagar").show();
+                    limpiarVenta();
+                });
+
+                $("#a_pagar").click(function(){
+                    $("#vender").hide();
+                    $("#pagar").show();
+                    $("#a_pagar").hide();
+                    $("#a_vender").show();
+                    limpiarPago();
+                });
+
+                llenarProductos('#producto', 2);
+                llenarClientes('#comprador');
+            });
+
+            function cambioProducto(){
+                $("#valor").val(obtenerAtributo('producto', 'precio'));
+            }
+
+            function obtenerAtributo(select,attr){
+                var productos = document.getElementById(select);
+                var seleccionado = productos.options[productos.selectedIndex];
+                var precio = seleccionado.getAttribute(attr);
+                return precio;
+            }
+
+            function nuevoDetalle(){
+                var nombre = $("#producto option:selected").text();
+                var valor = $("#valor").val();
+                var cantidad = $("#cantidad").val();
+                var subtotal = valor * cantidad;
+                var producto = $("#producto").val();
+                var stock = obtenerAtributo('producto', 'stock');
+                if(producto.length <= 0){
+                    alert("Debe seleccionar un producto");
+                }else if(cantidad === null || cantidad <= 0){
+                    alert("Debe ingresar una cantidad");
+                }else if(parseInt(stock) < parseInt(cantidad)){
+                    alert("No puede comprar esa cantidad, no existe stock para cubrirla; solo hay:"+stock);
+                }else{
+                    var pro = buscarDetalle();
+                    if(pro !== null){
+                        pro.cantidad = parseInt(pro.cantidad) + parseInt(cantidad);
+                        pro.subtotal = $.round(parseInt(pro.subtotal) + parseInt(subtotal));
+                        detalles.push(pro);
+                    }else{
+                        detalles.push({producto: producto, nombre: nombre, cantidad: cantidad, subtotal : $.round(subtotal)});
+                    }
+                    limpiarDetalle();
+                    pintarDetalles();
+                }
+            }
+
+            function buscarDetalle(){
+                var producto = $("#producto").val();
+                for(var i=0; i < detalles.length; i++){
+                    if(producto === detalles[i].producto){
+                        var det = detalles[i];
+                        detalles.splice(i, 1);
+                        return det;
+                    }
+                }
+                return null;
+            }
+
+            function eliminarDetalle(j){
+                detalles.splice(j, 1);
+                pintarDetalles();
+            }
+
+            function limpiarDetalle(){
+                $("#producto").val("");
+                $("#cantidad").val("");
+                $("#valor").val("");
+            }
+
+            function pintarDetalles(){
+                var texto = "";
+                var total = 0;
+                for(var i=0; i < detalles.length; i++){
+                    texto += "<li class='list-group-item d-flex justify-content-between lh-condensed'>";
+                        texto += "<div>";
+                                texto += "<h6 class='my-0'>" + detalles[i].nombre+ "</h6>";
+                                texto += "<small class='text-muted'>Cantidad: " + detalles[i].cantidad+ "</small><br/>";
+                                texto += "<small class='text-muted'>Subtotal: $ " + $.currency(detalles[i].subtotal) + "</small>";
+                        texto += "</div>";
+                        texto += "<div style='text-align:right;'>";
+                            texto += "<button class='btn btn-sm btn-danger pull-right' onclick='eliminarDetalle("+i+")'>X</button>";
+                        texto += "</div>";
+                    texto += "</li>";
+                    total += detalles[i].subtotal;
+                }
+                texto += "<li class='list-group-item d-flex justify-content-between'>";
+                    texto += "<span>Total</span>";
+                    texto += "<strong>$ "+$.currency(total)+"</strong>";
+                texto += "</li>";
+                $("#total").val(total);
+                $("#detalles").html(texto);
+            }
+
+            function llenarVentasVista(lista){
+                var texto = "";
+                $("#ventas").empty();
+                for(var i=0; i < lista.length; i++){
+                texto +="<div style='margin-bottom:10px;' class='list-group-item'>"
+                        texto += "<p class='text-muted mb-1'><b>Fecha venta:</b> " + $.dateT(lista[i].at) + "</p>";
+                        texto += "<p class='text-muted mb-1'><b>Valor pagado:</b> " + $.currency(lista[i].vlrpagado) + "</p>";
+                        texto += "<p class='text-muted mb-1'><b>Valor saldo:</b> " + $.currency(lista[i].saldo) + "</p><br/>";
+                        texto += "<table class='table text-muted table-sm' style='width='100%;'>";
+                            texto += "<thead><tr>";  
+                            texto += "<th style='text-align:center;'>CANTIDAD</th>";  
+                            texto += "<th style='text-align:center;'>PRODUCTOS</th>";  
+                            texto += "<th style='text-align:center;'>SUBTOTAL</th>";  
+                            texto += "</tr></thead>";
+                            texto += "<tfoot><tr>";  
+                            texto += "<th colspan='2' style='text-align:right;'>TOTAL COMPRA</th>";  
+                            texto += "<th style='text-align:right;'> $"+ $.currency(lista[i].total) +"</th>";  
+                            texto += "</tr></tfoot>";  
+                            texto += "<tbody>"; 
+                            for(var j = 0; j < lista[i].detalles.length; j++){
+                                texto += "<tr><td>";  
+                                    texto += lista[i].detalles[j].cantidad;
+                                texto += "</td>";  
+                                texto += "<td>";
+                                    texto += lista[i].detalles[j].producto.nombre;  
+                                texto += "</td>";  
+                                texto += "<td style='text-align:right;'>";  
+                                    texto += "$"+$.currency(lista[i].detalles[j].subtotal);  
+                                texto += "</td></tr>";  
+                            }
+                            texto += "</tbody>"; 
+                    texto += "</table>";
+                texto += "</div>";
+                }
+                $("#ventas").html(texto);
+            }
+
+            function pintarInfoCliente(){
+                var cliente = $("#cliente").val();
+                $.ajax({
+                    method: "GET",
+                    url: "sales/resumen/"+cliente,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json"
+                }).done(function( msg ) {
+                    var lista = msg;
+                    $("#debe").val($.currency(msg.resumen.saldos));
+                    $("#paga").val(msg.resumen.saldos);
+                    llenarVentasVista(msg.ventas);
+                    $("#resumen").attr('href', 'documents/'+cliente+'.txt');
+                    $("#resumen").show();
+                });
+            }
+
+            function enviarVenta(){
+                var total = parseInt($("#total").val());
+                var vlrpagado = ($("#vlrpagado").val()==='')?0:parseInt($("#vlrpagado").val());
+                var comprador = $("#comprador").val();
+                var fecha = $("#fecha").val();
+                console.log(fecha);
+                if(comprador===null || comprador === ''){
+                    alert("Debe ingresar un comprador");
+                }else if(detalles<=0){
+                    alert("Debe ingresar por lo menos un producto a la venta");
+                }else{
+                    var venta = {comprador: comprador, total: total, vlrpagado: vlrpagado, detalles: detalles, fecha: fecha};
+                    $.ajax({
+                        method: "POST",
+                        url: "sales",
+                        data: venta
+                    }).done(function( msg ) {
+                        alert( "Data Saved: " + msg.mensaje );
+                        llenarProductos('#producto', 2);
+                        limpiarVenta();
+                    });
+                }
+            }
+
+            function enviarPago(){
+                var paga = $("#paga").val();
+                var cliente = $("#cliente").val();
+                if(cliente===null || cliente === ''){
+                    alert("Debe ingresar un cliente");
+                }else{
+                    var pago = {cliente: cliente, paga: paga};
+                    $.ajax({
+                        method: "PUT",
+                        url: "sales/pagar",
+                        data: pago
+                    }).done(function( msg ) {
+                        alert( "Data Saved: " + msg.mensaje );
+                        limpiarPago();
+                    });
+                }
+            }
+
+            function limpiarVenta(){
+                $("#fecha").val($.date(null));
+                $("#total").val(null);
+                $("#vlrpagado").val(null);
+                $("#comprador").val('');
+                $("#comprador").focus();
+                detalles = [];
+                $("#detalles").html(null);
+            }
+            function limpiarPago(){
+                $("#ventas").empty();
+                $("#debe").val(null);
+                $("#paga").val(null);
+                llenarClientesDeudores('#cliente');
+                $("#cliente").val('');
+                $("#resumen").hide();
+            }
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <nav id="navbar-example2" class="navbar navbar-light bg-light col-md-12">
+                <a class="navbar-brand" href="#">Ventana principal</a>
+                <ul class="nav nav-pills">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="a_vender">Vender</a>
+                        <a class="nav-link" href="#" id="a_pagar">Cobrar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="clients">Clientes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="products">Productos</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Listas</a>
+                        <div class="dropdown-menu">
+                            <a class="nav-link" href="list-purchase">Lista de Compras</a>
+                            <a class="nav-link" href="list-sale">Lista de Ventas</a>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+            <div id="vender">
+                <div class="row espacio">
+                    <div class="col-md-4">
+                        <label for="fecha">Fecha</label>
+                    </div>
+                    <div class="col-md-8">
+                        <input type="date"  name="fecha" id="fecha" class="form-control" />
+                    </div>
+                </div>
+                <div class="row espacio">
+                    <div class="col-md-4">
+                        <label for="comprador">Comprador</label>
+                    </div>
+                    <div class="col-md-8">
+                        <select  name="comprador" id="comprador" class="form-control"></select>
+                        <input type="hidden" id="total" name="total"/>
+                    </div>
+                </div>
+                <div class="row espacio">
+                    <div class="col-md-2">
+                        <label for="producto">Producto</label>
+                    </div>
+                    <div class="col-md-4">
+                        <select  name="producto" id="producto" onchange="cambioProducto()" class="form-control"></select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="valor">Valor</label> 
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" id="valor" name="valor" readonly class="form-control"/> 
+                    </div>
+                    <div class="col-md-2">
+                        <label for="cantidad">Cantidad</label> 
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" id="cantidad" name="cantidad" class="form-control"/>
+                    </div>
+                    <div class="col-md-6">
+                        <button id="additem" onclick="nuevoDetalle()" class="btn btn-primary">Nuevo detalle</button>
+                    </div>
+                    <div class="col-md-12" style="margin-top:5px;">
+                        <ul class="list-group" id="detalles" style="width: 100%"></ul>
+                    </div>
+                </div>
+                <div class="row espacio">
+                    <div class="col-md-4">
+                            <label for="vlrpagado">Valor pagado</label>
+                    </div>
+                    <div class="col-md-8">
+                        <input type="number" id="vlrpagado" name="vlrpagado" class="form-control"/>
+                    </div>
+                </div>
+                <div class="row espacio text-center">
+                    <div class="col-md-12">
+                        <button id="save" onclick="enviarVenta()" class="btn btn-primary">Enviar</button>
+                    </div>
+                </div>
+            </div>
+            <div id="pagar">
+                <div class="row espacio">
+                    <div class="col-md-4">
+                        <label for="cliente">Comprador</label>
+                    </div>
+                    <div class="col-md-8">
+                        <select  name="cliente" id="cliente" class="form-control" onchange="pintarInfoCliente()"></select>
+                    </div>
+                </div>
+                <div class="row espacio">
+                    <div class="col-md-4">
+                        <label for="debe">Debe</label>
+                    </div>
+                    <div class="col-md-8">
+                        <input type="number" id="debe" name="debe" class="form-control" readonly/>
+                    </div>
+                </div>
+                <div class="row espacio">
+                    <div class="col-md-4">
+                        <label for="paga">Paga</label>
+                    </div>
+                    <div class="col-md-8">
+                        <input type="number" id="paga" name="paga" class="form-control"/>
+                    </div>
+                </div>
+                <div class="row espacio text-center">
+                    <div class="col-md-12">
+                        <button id="pago" onclick="enviarPago()" class="btn btn-primary">Enviar</button>
+                        <a id="resumen" href="#" download="resumen_cliente.txt" class="btn btn-danger">Descargar resumen</a>
+                    </div>
+                </div>
+                <div class="row espacio">
+                    <ul class="list-group" id="ventas" style="width: 100%">
+                    </ul>
+                </div>
+            </div>
+       </div>
+    </body>
+</html>

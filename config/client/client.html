@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Tienda el tesoro</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <link href="css/tema.css" rel="stylesheet" type="text/css"/>
+    <script src="js/jquery-3.3.1.min.js" type="application/javascript"></script>
+    <script src="js/bootstrap.js" type="application/javascript"></script>
+    <script src="js/utileria.js" type="application/javascript"></script>
+    <script>
+      var lista = [];
+      var modal;
+      var editar = 0;
+        $(document).ready(function(){
+          llenarClientesVista('#clientes');
+          modal = $('#ModalCE');
+        });
+
+        function abrirModal(usuario){
+          for(var i = 0; i < lista.length; i++){
+            if(lista[i]._id === usuario){
+              $("#_id").attr("readonly", true);
+              $("#_id").attr("autofocus", false);
+              $("#_id").val(lista[i]._id);
+              $("#nombre").val(lista[i].nombre);
+              $("#apellido").val(lista[i].apellido);
+              $("#correo").val(lista[i].correo);
+              $("#celular").val(lista[i].celular);
+              $("#tipodoc").val(lista[i].tipodoc);
+              $("#doc").val(lista[i].doc);
+              $("#tipopers").val(lista[i].tipopers);
+              modal.modal('show');
+              editar = 1;
+              break;
+            }
+          }
+        }
+
+        function llenarClientesVista(control){
+            $.ajax({
+                method: "GET",
+                url: "client",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json"
+            }).done(function( msg ) {
+                lista = msg;
+                var texto = "";
+                $(control).empty();
+                for(var i=0; i < lista.length; i++){
+                        texto += "<li class='list-group-item d-flex justify-content-between lh-condensed'>";
+                            texto += "<div>";
+                                  texto += "<a href='#' onclick=\"abrirModal('" + lista[i]._id + "')\">"
+                                    texto += "<h6 class='my-0'>" + lista[i].nombre + " " +  lista[i].apellido + "</h6>";
+                                  texto += "</a>";
+                                    texto += "<small class='text-muted'>Nickname: " + lista[i]._id + "</small>";
+                            texto += "</div>";
+                        texto += "</li>";
+                }
+                $(control).html(texto);
+            });
+        }
+
+        function enviarInformacion(){
+            var _id = $("#_id").val();
+            var nombre = $("#nombre").val();
+            var apellido = $("#apellido").val();
+            var correo = $("#correo").val();
+            var celular = $("#celular").val();
+            var tipodoc = $("#tipodoc").val();
+            var doc = $("#doc").val();
+            var tipopers = $("#tipopers").val();
+            if(_id===null || nombre === null || apellido === null || doc === null || _id=== '' || nombre === '' || apellido === '' || doc === ''){
+              if(_id === null || _id === ''){
+                alert("Debe ingresar un nick");
+                $("#_id").focus();
+              }else if(nombre === null || nombre === ''){
+                alert("Debe ingresar un  nombre");
+                $("#nombre").focus();
+              }else if(apellido === null || apellido === ''){
+                alert("Debe ingresar un apellido");
+                $("#apellido").focus();
+              }else if(doc === null || doc === ''){
+                alert("Debe ingresar un doc");
+                $("#doc").focus();
+              }
+            }else{
+                var cliente = 
+                {
+                  _id:_id,
+                  nombre: nombre,
+                  apellido: apellido,
+                  correo: correo,
+                  celular: celular,
+                  tipodoc: tipodoc,
+                  doc: doc,
+                  tipopers: tipopers
+                };
+                $.ajax({
+                    method: (editar===0)?"POST":"PUT",
+                    url: "client",
+                    data: cliente
+                }).done(function( msg ) {
+                    alert( "Data Saved: " + msg.mensaje );
+                    limpiarModal();
+                    llenarClientesVista('#clientes');
+                    modal.modal('hide');
+                });
+            }
+        }
+
+        function limpiarModal(){
+          $("#_id").attr("readonly", false);
+          $("#_id").attr("autofocus", true);
+          $("#_id").val(null);
+          $("#nombre").val(null);
+          $("#apellido").val(null);
+          $("#correo").val(null);
+          $("#celular").val(null);
+          $("#tipodoc").val("");
+          $("#doc").val(null);
+          $("#tipopers").val("");
+        }
+
+        function abrirNuevo(){
+          editar = 0;
+          limpiarModal();
+          modal.modal('show');
+        }
+    </script>
+  </head>
+  <body class="container">
+
+    <div class="row espacio">
+        <nav id="navbar-example2" class="navbar navbar-light bg-light col-md-12">
+            <a class="navbar-brand" href="#">Lista de clientes</a>
+            <ul class="nav nav-pills">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Vender o Cobrar</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="products">Productos</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Listas</a>
+                    <div class="dropdown-menu">
+                        <a class="nav-link" href="list-purchase">Lista de Compras</a>
+                        <a class="nav-link" href="list-sale">Lista de Ventas</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Opciones</a>
+                  <div class="dropdown-menu">
+                    <a class="dropdown-item" href="#" onclick="abrirNuevo()">Crear nuevo</a>
+                  </div>
+                </li>
+            </ul>
+        </nav>
+        <ul class="list-group" id="clientes" style="width: 100%; margin-top:20px;">
+        </ul>
+    </div>
+      <div class="modal" tabindex="-1" role="dialog" id="ModalCE">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Clientes</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">                
+                <label for="_id">Nickname</label>
+                <input type="text" id="_id" name="_id" class="form-control" required autofocus>
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" name="nombre" class="form-control"  required>
+                <label for="apellido" >Apellido</label>
+                <input type="text" id="apellido" name="apellido" class="form-control" required>
+                <label for="correo" >Correo</label>
+                <input type="email" id="correo" name="correo" class="form-control" >
+                <label for="celular" >Celular</label>
+                <input type="tel" id="celular" name="celular" class="form-control" >
+                <label for="tipodoc" >Tipo documento</label>
+                <select name="tipodoc" class="form-control" style="padding-top:5px;">
+                    <option value="CC">Cedula de ciudadania</option>
+                    <option value="CE">Cedula de extranjeria</option>
+                    <option value="PS">Pasaporte</option>
+                    <option value="NT">NIT</option>
+                </select>
+                <label for="doc">Documento</label>
+                <input type="number" id="doc"  name="doc" class="form-control">
+                <label for="tipopers">Tipo persona</label>
+                  <select name="tipopers" class="form-control" style="padding-top:5px;">
+                    <option value="NAT">Natural</option>
+                    <option value="JUD">Juridica</option>
+                </select>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="enviarInformacion()">Enviar</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+    
+  </body>
+</html>
