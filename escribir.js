@@ -75,6 +75,22 @@ exports.pintar_venta =  function(cliente, objeto){
     })
 };
 
+exports.pintar_productos =  function(objeto){
+    var texto = "";
+    objeto.forEach(function(element) {
+        texto +=  element.nombre + ";" + element.valorvnt;
+        texto +=  pintar_espacio_sencillo();
+    });
+
+    fs.writeFile('config//client//documents//productos.txt', texto, function(err){
+        if(err){
+            throw err;
+        }
+
+        console.log('informe creado');
+    })
+};
+
 function pintar_separacion(){
     return '-----------------------------------------------------------------\n';
 }

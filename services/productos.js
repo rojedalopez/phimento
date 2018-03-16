@@ -1,6 +1,7 @@
 
 var mongoose = require('mongoose');  
 var Products = mongoose.model('Products');  
+var Printer = require('../escribir');
 
 exports.CreateProduct = function(req, res) { 
     if(req.body.productos!==undefined){
@@ -137,7 +138,7 @@ exports.BuscarProducts = function(req, res) {
     
     Products.find(busqueda, function(err, products) {
         if(err)res.status(500).send({mensaje: err});
-        
+        //Printer.pintar_productos(products);
         res.status(200).jsonp(products);
      }).sort({_id:1});
 };
@@ -152,11 +153,13 @@ exports.DeleteProducts = function(req, res) {
     });
 };
 
-/*exports.ModifyProductXX = function(req, res) {
+exports.ModifyProductXX = function(req, res) {
     var id = req.params.id;
-    var cant = req.params.cant;
+    var stand = req.params.stand;
+    var stock = req.params.stock;
     Products.findById(id, function(err, product) {
-        product.cantstand = cant;
+        product.cantstand = stand;
+        product.cantstock = stock;
 
         product.save(function(err) {
             if(err)res.status(500).send({mensaje: err});
@@ -166,4 +169,4 @@ exports.DeleteProducts = function(req, res) {
             .send({mensaje: "OK"});
         });
     });
-};*/
+};

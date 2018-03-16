@@ -152,7 +152,7 @@ exports.BuscarVentas = function(req, res) {
     }
     var date = year + "-" + month + "-" + day + "T00:00:00.000Z";
     console.log(date);
-    Ventas.find({ activa: true, at: date }).sort( { created_at: -1 } )
+    Ventas.find({ activa: true/*, at: date */}).sort( { created_at: -1 } )
     .populate({path :'comprador  detalles.producto'})
     .exec(function(err, ventas) {
         console.log(ventas[0]);

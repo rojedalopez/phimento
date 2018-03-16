@@ -52,7 +52,7 @@ router.post('/product',/*middleware.ensureAuthenticated, */productCtrl.CreatePro
 router.put('/product',/*middleware.ensureAuthenticated, */productCtrl.ModifyProduct);  
 router.put('/product/stock',/*middleware.ensureAuthenticated, */productCtrl.ModifyStock);
 router.get('/product/',/*middleware.ensureAuthenticated, */productCtrl.BuscarProducts);
-//router.get('/product/:id/:cant',/*middleware.ensureAuthenticated, */productCtrl.ModifyProductXX);
+router.get('/product/:id/:stand/:stock',/*middleware.ensureAuthenticated, */productCtrl.ModifyProductXX);
 router.get('/product/:type',/*middleware.ensureAuthenticated, */productCtrl.BuscarProducts);
 router.get('/product/:type/:id',/*middleware.ensureAuthenticated, */productCtrl.BuscarProducts);  
 router.delete('/product/:id',/*middleware.ensureAuthenticated, */productCtrl.DeleteProducts);  
