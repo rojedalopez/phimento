@@ -141,7 +141,7 @@ function date(dd) {
     if(dd!==null){
         d = new Date(dd);
     }
-    var day = d.getDate();
+    var day = d.getUTCDate();
     var month = d.getMonth() + 1;
     var year = d.getFullYear();
     if (day < 10) {

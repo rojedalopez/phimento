@@ -13,6 +13,7 @@
         <script src="js/utileria.js" type="application/javascript"></script>
         <script>
             var detalles = [];
+            var modalPagar, modalDetalles;
             $(document).ready(function(){
                 $("#fecha").val($.date(null));
                 $("#pagar").hide();
@@ -36,7 +37,21 @@
 
                 llenarProductos('#producto', 2);
                 llenarClientes('#comprador');
+                modalPagar = $('#ModalPagar');
+                modalDetalles = $('#ModalDetalles');
             });
+
+            function abrirModalPagar(cliente, debe){
+                $("#cliente").val(cliente);
+                $("#debe").val(debe);
+                $("#paga").val(debe);
+                modalPagar.modal('show');
+            }
+
+            function abrirModalDetalles(cliente){
+                pintarInfoCliente(cliente);
+                modalDetalles.modal('show');
+            }
 
             function cambioProducto(){
                 $("#valor").val(obtenerAtributo('producto', 'precio'));
@@ -160,8 +175,7 @@
                 $("#ventas").html(texto);
             }
 
-            function pintarInfoCliente(){
-                var cliente = $("#cliente").val();
+            function pintarInfoCliente(cliente){
                 $.ajax({
                     method: "GET",
                     url: "sales/resumen/"+cliente,
@@ -169,8 +183,6 @@
                     dataType: "json"
                 }).done(function( msg ) {
                     var lista = msg;
-                    $("#debe").val($.currency(msg.resumen.saldos));
-                    $("#paga").val(msg.resumen.saldos);
                     llenarVentasVista(msg.ventas);
                     $("#resumen").attr('href', 'documents/'+cliente+'.txt');
                     $("#resumen").show();
@@ -233,8 +245,8 @@
                 $("#debe").val(null);
                 $("#paga").val(null);
                 llenarClientesDeudores('#cliente');
-                $("#cliente").val('');
                 $("#resumen").hide();
+                modalPagar.modal('hide');
             }
         </script>
     </head>
@@ -321,41 +333,68 @@
                 </div>
             </div>
             <div id="pagar">
-                <div class="row espacio">
-                    <div class="col-md-4">
-                        <label for="cliente">Comprador</label>
-                    </div>
-                    <div class="col-md-8">
-                        <select  name="cliente" id="cliente" class="form-control" onchange="pintarInfoCliente()"></select>
-                    </div>
-                </div>
-                <div class="row espacio">
-                    <div class="col-md-4">
-                        <label for="debe">Debe</label>
-                    </div>
-                    <div class="col-md-8">
-                        <input type="number" id="debe" name="debe" class="form-control" readonly/>
-                    </div>
-                </div>
-                <div class="row espacio">
-                    <div class="col-md-4">
-                        <label for="paga">Paga</label>
-                    </div>
-                    <div class="col-md-8">
-                        <input type="number" id="paga" name="paga" class="form-control"/>
-                    </div>
-                </div>
-                <div class="row espacio text-center">
-                    <div class="col-md-12">
-                        <button id="pago" onclick="enviarPago()" class="btn btn-primary">Enviar</button>
-                        <a id="resumen" href="#" download="resumen_cliente.txt" class="btn btn-danger">Descargar resumen</a>
-                    </div>
-                </div>
-                <div class="row espacio">
-                    <ul class="list-group" id="ventas" style="width: 100%">
-                    </ul>
+                <div id="cliente" style="margin-top:15px;">
+
                 </div>
             </div>
        </div>
+
+       <div class="modal" tabindex="-1" role="dialog" id="ModalPagar">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Pagar/Abonar deuda</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">                
+                    <input type="hidden" name="cliente" id="cliente"/>
+                    <div class="row espacio">
+                        <div class="col-md-4">
+                                <label for="debe">Debe</label>
+                            </div>
+                            <div class="col-md-8">
+                                <input type="number" id="debe" name="debe" class="form-control" readonly/>
+                            </div>
+                        </div>
+                        <div class="row espacio">
+                            <div class="col-md-4">
+                                <label for="paga">Paga</label>
+                            </div>
+                            <div class="col-md-8">
+                                <input type="number" id="paga" name="paga" class="form-control"/>
+                            </div>
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary"  onclick="enviarPago()">Enviar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" tabindex="-1" role="dialog" id="ModalDetalles">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Pasar de Stock a Stand</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">                
+                    <ul class="list-group" id="ventas" style="width: 100%">
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-danger" id="resumen" download="resumen_cliente.txt">Descargar resumen</a>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     </body>
 </html>

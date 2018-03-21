@@ -38,11 +38,36 @@ function llenarClientesDeudores(control){
         dataType: "json"
     }).done(function( msg ) {
         var lista = msg;
+        var total = 0;
         $(control).empty();
-        $(control).append("<option value=''>Seleccione cliente</option>");
+        var texto = "";
+        texto += "<table class='table table-striped table-bordered' style='width:100%'>";
+        texto += "<thead>";
+            texto += "<tr>";
+                texto += "<td>Cliente</td>";
+                texto += "<td>Valor deuda</td>";
+                texto += "<td style='width:250px;'>Opciones</td>";
+            texto += "</tr>";
+        texto += "</thead>";
+        texto += "<tbody>";
         for(var i = 0; i < lista.length; i++){
-            $(control).append("<option value='"+lista[i]._id+"'>"+lista[i].comprador[0].nombre + " " +  lista[i].comprador[0].apellido +"</option>");
+            total += parseInt(lista[i].debe);
+            texto += "<tr>";
+                texto += "<td>"+ lista[i].comprador[0].nombre + " " +  lista[i].comprador[0].apellido +"</td>";
+                texto += "<td style='text-align: right;'>"+ $.currency(lista[i].debe) +"</td>";
+                texto += "<td style='text-align: center;'><a href='#' onclick='abrirModalPagar(\""+lista[i]._id+"\", "+lista[i].debe+");'>Pagar/Abonar</a> - ";
+                texto += "<a href='#' onclick='abrirModalDetalles(\""+lista[i]._id+"\");'>Ver detalles</a></td>";
+            texto += "</tr>";
         }
+        texto += "</tbody>";
+        texto += "<tfoot>";
+            texto += "<tr>";
+                texto += "<td>Total</td>";
+                texto += "<td colspan='2' style='text-align: right;'>"+$.currency(total)+"</td>";
+            texto += "</tr>";
+        texto += "</tfoot>";
+        texto += "</table>";
+        $(control).html(texto);
     });
 }
 
