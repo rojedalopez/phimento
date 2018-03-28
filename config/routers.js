@@ -70,6 +70,9 @@ router.get('/sales/resumen/:ident',/*middleware.ensureAuthenticated, */salesCtrl
 router.put('/sales/pagar',/*middleware.ensureAuthenticated, */salesCtrl.SaldarVenta);
 router.get('/sales/deudores',/*middleware.ensureAuthenticated, */salesCtrl.ClientesDeudores);
 
+router.post('/nojoda',/*middleware.ensureAuthenticated, */salesCtrl.CCCCCC);
+
+
 router.post('/purchases',/*middleware.ensureAuthenticated, */purchasesCtrl.RegistrarCompra); 
 router.get('/purchases',/*middleware.ensureAuthenticated, */purchasesCtrl.BuscarCompras); 
 router.delete('/purchases',/*middleware.ensureAuthenticated, */purchasesCtrl.BorrarCompra); 

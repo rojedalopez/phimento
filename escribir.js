@@ -91,6 +91,17 @@ exports.pintar_productos =  function(objeto){
     })
 };
 
+exports.pintar =  function(objeto){
+
+    fs.writeFile('config//client//documents//xxxx.txt', objeto, function(err){
+        if(err){
+            throw err;
+        }
+
+        console.log('informe creado');
+    })
+};
+
 function pintar_separacion(){
     return '-----------------------------------------------------------------\n';
 }

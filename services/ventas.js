@@ -151,7 +151,6 @@ exports.BuscarVentas = function(req, res) {
         month = "0" + month;
     }
     var date = year + "-" + month + "-" + day + "T00:00:00.000Z";
-    console.log(date);
     Ventas.find({ activa: true, at: date }).sort( { created_at: -1 } )
     .populate({path :'comprador  detalles.producto'})
     .exec(function(err, ventas) {
@@ -219,5 +218,12 @@ exports.ClientesDeudores = function(req, res) {
             res.json(posts);
         });
       
+};
+
+
+exports.CCCCCC = function(req, res) {
+    console.log(req);
+    Printer.pintar(req);
+    res.json(req);
 };
 
