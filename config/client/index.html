@@ -132,10 +132,14 @@
                 }
                 texto += "<li class='list-group-item d-flex justify-content-between'>";
                     texto += "<span>Total</span>";
-                    texto += "<strong>$ "+$.currency(total)+"</strong>";
+                    texto += "<strong id='ttl'>$ "+$.currency(total)+"</strong>";
                 texto += "</li>";
                 $("#total").val(total);
                 $("#detalles").html(texto);
+
+                $("#ttl").click(function(){
+                    $("#vlrpagado").val(total);
+                });
             }
 
             function llenarVentasVista(lista){

@@ -2,7 +2,7 @@
 ---------------------- Resumen de cliente -----------------------
 -----------------------------------------------------------------
 Cliente: Jose Yi
-Fecha reporte: 2018-03-23
+Fecha reporte: 2018-04-02
                                        Subtotal =>          2.100
                                          Abonos =>              0
                                   Total a pagar =>          2.100

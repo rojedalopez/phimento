@@ -27,7 +27,7 @@
           function llenarVentasVista(control){
             $.ajax({
                 method: "GET",
-                url: "sales",
+                url: "sales/list/T",
                 contentType: "application/json; charset=utf-8",
                 dataType: "json"
             }).done(function( msg ) {

@@ -141,6 +141,11 @@ exports.SaldarVenta = function(req, res) {
 
 exports.BuscarVentas = function(req, res) {
     var d = new Date();
+    if(req.params.fecha !== undefined){
+        if(req.params.fecha !== 'T'){
+            d = new Date(req.params.fecha);
+        }
+    }
     var day = d.getDate();
     var month = d.getMonth() + 1;
     var year = d.getFullYear();
@@ -151,6 +156,7 @@ exports.BuscarVentas = function(req, res) {
         month = "0" + month;
     }
     var date = year + "-" + month + "-" + day + "T00:00:00.000Z";
+    console.log(date);
     Ventas.find({ activa: true, at: date }).sort( { created_at: -1 } )
     .populate({path :'comprador  detalles.producto'})
     .exec(function(err, ventas) {
