@@ -5,7 +5,8 @@ var Ventas = mongoose.model('Ventas');
 var Compras = mongoose.model('Compras');  
 var Cliente = mongoose.model('Clientes');
 var Products = mongoose.model('Products');
-var Printer = require('../escribir');
+var Printer = require('../services/writer');
+var MailSender = require('../mailsender');
 
 exports.RegistrarVenta = function(req, res) {  
     var saldo = 0;
@@ -53,6 +54,14 @@ exports.RegistrarVenta = function(req, res) {
                     });
                 });
             });
+            
+            //envio el correo si tengo un correo en el objeto
+            if(req.body.correo!==null && req.body.correo!== undefined && req.body.correo !== ""){
+                if((parseInt(req.body.total) - parseInt(req.body.vlrpagado)) > 0){
+                    MailSender.sendEmail(req.body);
+                }
+            }
+
             res
             .status(200)
             .send({mensaje: "OK"});   
@@ -181,6 +190,32 @@ exports.BuscarVentasXCliente = function(req, res) {
                     });
         });
 
+    }
+};
+
+exports.EnviarResumenCliente = function(req, res) {
+    var ident = req.body.ident;
+    var correo = req.body.correo;
+    if(ident !== ''){
+        if(correo!==''){
+            var retorno = {ventas: [],resumen:{}};
+            Ventas.find({comprador: ident, pagado: false, activa: true}).sort( { at: -1 } )
+                    .populate('comprador detalles.producto')
+                    .exec(function(err, lst_venta) {
+                        retorno.ventas = lst_venta;
+                        Ventas
+                        .aggregate([{ $match: {comprador: ident, activa: true, pagado: false}}, {$group:{ _id:'resumen', total: {$sum:'$total'}, pagado: {$sum:'$vlrpagado'}, saldos: {$sum:'$saldo'}}}])
+                        .exec(function(err, resumen) {
+                            retorno.resumen = resumen[0];
+                            Printer.pintar_venta(ident, retorno);
+                            var objeto = {correo: correo, usuario: ident, saldo: retorno.resumen.saldos};
+                            MailSender.sendEmailResumen(objeto);
+                            res.status(200).send({mensaje: "Ok"});
+                        });
+            });
+        }else{
+            res.status(200).send({mensaje: "No hay correo configurado"});
+        }
     }
 };
 

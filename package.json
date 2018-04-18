@@ -14,5 +14,13 @@
     "calificacion"
   ],
   "author": "ROjedaLopez",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "dependencies": {
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "jwt-simple": "^0.5.1",
+    "moment": "^2.22.1",
+    "mongoose": "^5.0.15",
+    "nodemailer": "^4.6.4"
+  }
 }

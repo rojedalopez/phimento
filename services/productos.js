@@ -1,7 +1,7 @@
 
 var mongoose = require('mongoose');  
 var Products = mongoose.model('Products');  
-var Printer = require('../escribir');
+var Printer = require('../services/writer');
 
 exports.CreateProduct = function(req, res) { 
     if(req.body.productos!==undefined){

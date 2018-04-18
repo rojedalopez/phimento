@@ -66,7 +66,8 @@ router.post('/sales',/*middleware.ensureAuthenticated, */salesCtrl.RegistrarVent
 router.delete('/sales',/*middleware.ensureAuthenticated, */salesCtrl.DevolverVenta);  
 router.get('/sales/list/:fecha',/*middleware.ensureAuthenticated, */salesCtrl.BuscarVentas); 
 router.get('/sales/resumen',/*middleware.ensureAuthenticated, */salesCtrl.ResumenVentas); 
-router.get('/sales/resumen/:ident',/*middleware.ensureAuthenticated, */salesCtrl.BuscarVentasXCliente); 
+router.get('/sales/resumen/:ident',/*middleware.ensureAuthenticated, */salesCtrl.BuscarVentasXCliente);
+router.post('/sales/resumen/send',/*middleware.ensureAuthenticated, */salesCtrl.EnviarResumenCliente);
 router.put('/sales/pagar',/*middleware.ensureAuthenticated, */salesCtrl.SaldarVenta);
 router.get('/sales/deudores',/*middleware.ensureAuthenticated, */salesCtrl.ClientesDeudores);
 

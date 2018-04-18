@@ -15,7 +15,7 @@ var app = express();
 app.use(bodyParser.json());  
 app.use(bodyParser.urlencoded({extended: true}));  
 app.use(cors());  
-app.set('port', 3000);
+app.set('port', 3500);
 app.use(express.static(__dirname + '/config/client'));
 
 app.use(router);

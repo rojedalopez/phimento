@@ -25,7 +25,7 @@ function llenarClientes(control){
         $(control).empty();
         $(control).append("<option value=''>Seleccione comprador</option>");
         for(var i = 0; i < lista.length; i++){
-            $(control).append("<option value='"+lista[i]._id+"'>"+lista[i].nombre + " " +  lista[i].apellido +"</option>");
+            $(control).append("<option value='"+lista[i]._id+"' correo='"+ ((lista[i].correo===undefined) ? "": lista[i].correo) +"'>"+lista[i].nombre + " " +  lista[i].apellido +"</option>");
         }
     });
 }
@@ -56,7 +56,12 @@ function llenarClientesDeudores(control){
                 texto += "<td>"+ lista[i].comprador[0].nombre + " " +  lista[i].comprador[0].apellido +"</td>";
                 texto += "<td style='text-align: right;'>"+ $.currency(lista[i].debe) +"</td>";
                 texto += "<td style='text-align: center;'><a href='#' onclick='abrirModalPagar(\""+lista[i]._id+"\", "+lista[i].debe+");'>Pagar/Abonar</a> - ";
-                texto += "<a href='#' onclick='abrirModalDetalles(\""+lista[i]._id+"\");'>Ver detalles</a></td>";
+                texto += "<a href='#' onclick='abrirModalDetalles(\""+lista[i]._id+"\");'>Ver detalles</a> ";
+                if(lista[i].comprador[0].correo !== ''){
+                    texto += "- <a href='#' onclick='enviarResumen(\""+lista[i].comprador[0].correo+"\", \""+lista[i]._id+"\")'>Enviar Resumen</a></td>";
+                }else{
+                    texto += "</td>";
+                }
             texto += "</tr>";
         }
         texto += "</tbody>";
@@ -68,6 +73,17 @@ function llenarClientesDeudores(control){
         texto += "</tfoot>";
         texto += "</table>";
         $(control).html(texto);
+    });
+}
+
+function enviarResumen(correo, usuario){
+    console.log({correo: correo, ident: usuario});
+    $.ajax({
+        method: "POST",
+        url: "sales/resumen/send",
+        data: {correo: correo, ident: usuario}
+    }).done(function( msg ) {
+       alert(msg.mensaje);
     });
 }
 

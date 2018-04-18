@@ -198,13 +198,14 @@
                 var vlrpagado = ($("#vlrpagado").val()==='')?0:parseInt($("#vlrpagado").val());
                 var comprador = $("#comprador").val();
                 var fecha = $("#fecha").val();
+                var correo = obtenerAtributo('comprador', 'correo');
                 console.log(fecha);
                 if(comprador===null || comprador === ''){
                     alert("Debe ingresar un comprador");
                 }else if(detalles<=0){
                     alert("Debe ingresar por lo menos un producto a la venta");
                 }else{
-                    var venta = {comprador: comprador, total: total, vlrpagado: vlrpagado, detalles: detalles, fecha: fecha};
+                    var venta = {comprador: comprador, total: total, vlrpagado: vlrpagado, detalles: detalles, fecha: fecha, correo: correo};
                     $.ajax({
                         method: "POST",
                         url: "sales",
